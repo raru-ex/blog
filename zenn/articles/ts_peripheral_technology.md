@@ -23,6 +23,7 @@ JavaScript(TS)周りの進歩が凄く、あまりにもついていけていな
 - Biome
 - Vite
 - Webpack
+- Trubopack
 - esbuild
 - Babel
 - SWC
@@ -42,6 +43,7 @@ JavaScript(TS)周りの進歩が凄く、あまりにもついていけていな
 - Module bundler
   - esbuild
   - Webpack
+  - Turbopack
   - vite
 - Linter/Formatter
   - rome
@@ -119,7 +121,7 @@ Runtimeの中にLinterやFormatterなど他にも多くの機能を含むもの�
 | Deno    | セキュリティの重要度が高いシステムの開発   |
 | Bun     | フロントエンド開発でエコシステムとして利用 |
 
-基本的には安定を撮ってNodeを選択しておけば間違いなさそうというのが正直なところです。
+基本的には安定を取ってNodeを選択しておけば間違いなさそうというのが正直なところです。
 
 ただ個人開発や、小さなコマンドラインツール、runtimeというよりはテスト実行やパッケージマネージャの恩恵を受けるための開発環境として利用するという点でBun, Denoも良いのかなと思いました。
 Denoに関してはセキュリティやDeploy周りが充実しているというメリットがあるので、それがNodeによって使えるライブラリやノウハウの充実度より上回る場合には選択肢になってきそうです。
@@ -183,12 +185,17 @@ esbuildはModule Bundlerなのですがts->jsのトランスパイルも可能�
 そういうことを気にせずに、よしなにプログラムの依存を解決して一つのファイルにまとめてくれるのがModule Bundlerになります。
 ※ 正確にはサーバサイドJSが出てきてCommonJSが発足して〜、みたいな流れがあるはずです。
 
-### webpack, vite, esbuild
+### webpack, trubopack, vite, esbuild
 
 このあたりは複雑過ぎて細かに説明する知識を持ち合わせていないので簡単に記載します。
 
 webpackは長い年月をフロントエンドのModule Bundlerの代名詞として活躍してきたツールです。
 バンドル機能だけでなくトランスパイルやCSSのプリプロセッサとしての機能も組み込むことができて、フロントエンド開発に必要な全てが行えそうな勢いのなんでもござれツールです。
+
+Trubopackはwebpack, next, vercelの開発者がRustで開発を勧めているバンドラになります。
+Next.jsはこのTrubopackがbuilt inされています。
+まだ開発途中のようで、Next.js以外での利用方法などは不明です。今後のロードマップとしてSvelteへの統合などが考えられているようです。
+現時点ではローカル開発でのみ利用可能で、next buildは出来ないようです。
 
 viteは正確には公式でバンドルツールではないと自称していますが、バンドルできるツールです。
 webpackを基準として記載するため、少しズルになりますがwebpackと比較して以下の特徴があります。
@@ -208,6 +215,8 @@ viteのほうが後発のため、なにか明確な理由がない限りはモ�
 個人的にwebpackは設定が難しくなりすぎており、職人が必要なレベルになり始めているので他のツールがあるなら喜んで使いたい気持ちです。
 ※ webpack自体は偉大な存在です
 
+Next.jsでviteを利用する場合はサーバサイドの機能への対応に課題があるらしく、一部機能に制限がかかるようなので現実的にはNext.jsでの利用は避けたほうが良さそうです。
+
 ## Linter/Formatter
 
 Linter, Formatterについては説明不要だと思うのでしません。
@@ -226,8 +235,8 @@ romeはメンテナンスが終了しており、現在はBiomeが開発され�
 Honoはweb frameworkでした。
 PrismaはORMでした。
 
-Honoは日本の方が開発をしており、cloudfrare workers向けに作っていたもののようです。
-ご本人も今はCloudfrareにいらっしゃる様子？
+Honoは日本の方が開発をしており、cloudflare workers向けに作っていたもののようです。
+ご本人も今はCloudflareにいらっしゃる様子？
 
 HonoはUltrafastでとても軽量なフレームワークということで、非常に人気のようです。
 
@@ -269,4 +278,3 @@ A: ESMにはモジュールの読み込み方法や依存関係の解決方法�
 - [JavaScriptにおけるモジュール機構や、モジュールバンドラーについて](https://yinm.info/20200411/)
 - [【フロントエンドの歴史をわかりやすく】なぜWebpackが革命的なのか](https://tackblog.net/frontend-history/)
 - [【徹底比較】ViteとWebpackの違いとは](https://kinsta.com/jp/blog/vite-vs-webpack/)
-
