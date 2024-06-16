@@ -238,5 +238,109 @@ ORMライブラリに依存しているtable定義とは別に、純粋なテー
 
 ### 苦しみながらも実装を続ける
 
+さて、では次はアイテムの削除機能を作っていきます。
+要件はこんな感じ
+
+- 詳細ページからアイテムを削除できる
+- 一覧ページからアイテムを削除できる
+
+ではRepositoryに定義を追加します。
+
+```go
+type ItemRepository interface {
+	Save(context.Context, model.CreateItemModel) (identifier.ID[model.ItemCreateModel], error)
+	Delete(context.Context. identifier.ID[???]) error
+}
+```
+
+また出ました`???`です
+
+さてこれはどうしましょう
+`identifier.ID[model.ItemCreateModel]`？
+`identifier.ID[model.ListItemModel]`？
+はたまた、新しく定義を追加して`identifier.ID[model.DetailItemModel]`でしょうか。
+
+しかし削除処理をこんな感じで呼び出したかったりするような気がします
+
+```go
+// usecase.go
+func (u UseCase) Do(ids []uint64) error {
+	convertedIDs := convert.ToID[???](ids) // イメージ
+	u.repository.Delete(convertedIDs)
+}
+
+func (c Controller) DeleteItemController() {
+	request.Bind(&model)
+	c.usecase.Do(model.ids)
+}
+```
+
+はい、もう破綻してますね。
+どうやら、このID型の実装は良くない実装だったみたいです。
+
+## なんでこんなことになってしまったのか
+
+今回は僕はコードを書いてみたので、どうやら苦しくなるらしいということがわかりました。
+ただなんでこんなことになってしまうのだろう？　と自分なりに考えてみました。
+
+これはどうやら`ItemのID`という概念の抽象度と`特定用途として用意されたItemに関連するモデルに依存したID`というものの抽象度では`ItemのID`の方が抽象度が高いことから発生してるような気がしています。
+本来は抽象度が高いものを、変に具象化して意味付けをしてしまったために不具合が出てるようです。
+(という自分なり理解をしました)
+
+## じゃあどうするのか
+
+もっと良いGenericsを使った実装方法があればいいのですが、今のところ思い浮かびません。
+Structに依存しないような方法があるといいんですけど、他にやりようあるんでしょうかね...?
+
+じゃあどうするの？　って話なんですが、大人しく個別に実装するのが一番だと思いました。
+
+```go
+// core/type/identifier/item_id.go
+type Item uint64
+```
+
+これですね
+雑に考えるとテーブルの数だけ定義が増えるのですが、まぁGoって元々そういうものですし。
+あとやっぱり概念的にはこういう個別の定義であるほうが今回は正しいそうなので、素直に愚直にやるのが一番良さそうです。
+
+これを利用すると今までの実装が以下のようになります。
+
+```go
+// infrastructure/persistence/bun/table/item.go
+type TableItem struct {
+	ID uint64 `なんかORMとかに使うタグ`
+	Name string `なんかORMとかに使うタグ`
+}
+
+// core/domain/model/item.go
+type CreateItemModel struct {
+	Name string
+}
+
+// core/domain/model/list_item.go
+type ListItemModel struct {
+	ID identifier.ItemID
+	Name string
+}
+// infrastructure/persistence/bun/repositoryimpl/item_repository.go
+type ItemRepository interface {
+	Save(context.Context, model.CreateItemModel) (identifier.ItemID, error)
+	Delete(context.Context. identifier.ItemID) error
+}
+```
+
+うぅんシンプルだし、これがしたかったんやって感じですね
+
+## まとめ/雑感
+
+こういうのいわゆる「筋のいい人」というのはID型を作ろうって考えて定義を考え終わった時点で「理解」できるんでしょうね。
+僕はそこまで察しが良くないので試してみるまで「嫌な予感はするな」くらいで、本当のところどうなのかまではわかりませんでした。
+
+自分の記事に対する自分なりのアンサーを書いてみたのですが「もっとこうやればいいものが作れるよ」とか「その定義でもこう使えば回避できるよ」みたいなのがあれば教えていただけると幸いです。
+
+あとこれGoで書いてますが、多分Goとか全然関係なくてどの言語でも起きるものだと思います。
+言語の表現力の問題で真似できないものあるんでしょうけど、他の言語だとこういう形で実現してるものがあるよ、とかもご存知の方がいたら教えてほしいです。
+
+いい学びになった
 
 
