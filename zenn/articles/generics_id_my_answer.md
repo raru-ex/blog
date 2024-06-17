@@ -1,5 +1,5 @@
 ---
-title: "GolangでGenericsを使ったID型を利用してみたら思ったより微妙だった話"
+title: "GoでGenericsを使ったID型を利用してみたら思ったより微妙だった話"
 emoji: ""
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["go", "ddd", "generics", "クリーンアーキテクチャ", "オニオンアーキテクチャ"]
@@ -8,7 +8,7 @@ published: false
 
 ## 前置き
 
-これは以前に自身が書いた[GolangでGenericsを使ったID型の試行錯誤とuntyped constantの学び](https://zenn.dev/vs_blog/articles/542ec8795d64d9)へのアンサー記事になります。
+これは以前に自身が書いた[GoでGenericsを使ったID型の試行錯誤とuntyped constantの学び](https://zenn.dev/vs_blog/articles/542ec8795d64d9)へのアンサー記事になります。
 Genericsが悪いわけでも汎用的なID型が悪いわけでもなく、私のID型を表現する実装方法に問題があるかもしれないので、その点ご了承ください。
 
 ## 何が微妙だったのか
