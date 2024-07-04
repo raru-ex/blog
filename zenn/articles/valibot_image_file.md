@@ -35,15 +35,55 @@ export const ImageFileSchema = v.pipe(
 **追記**
 
 ```typescript
-export const ImageFileSchema = v.pipe(
+import * as v from 'valibot';
+
+const ImageFileSchema = v.pipe(
   v.instance(FileList),
-  v.transform<FileList, File>((v) => {
-    return v[0];
-  }),
-  v.mimeType(["image/jpeg", "image/png"], "JPEG, PNGいずれかの画像を選択してください"),
-  v.maxSize(1024 * 1024 * 100, "アップロードする画像は100MB以下のものにしてください"),
+  v.check((input) => input.length > 0),
+  v.transform((input) => input[0]),
+  v.mimeType(['image/jpeg', 'image/png']),
+  v.maxSize(1024 * 1024 * 100),
 );
 ```
+
+なんと公式の方がエゴサして回答コードをくれました。
+あぁ〜これでいいのかぁ。わかりやすいですね。
+一生ついていきます！
+
+**追記2**
+
+画像を必須項目にしたくないという要件が実現できていたなかったため、それが実現できる方法を載せておきます。
+
+```typescript
+const IMAGE_TYPES = ["image/jpeg", "image/png"];
+const IMAGE_MAX_SIZE = 10 * 1024 * 1024;
+
+export const ImageFileSchema = v.pipe(
+  v.instance(FileList), // input type="file"は未選択でもlength=0のFileListで渡ってくる
+  v.transform<FileList, File[]>((input) => {
+    const count = input.length;
+    const result = [];
+    for (let i = 0; i < count; i++) {
+      result.push(input.item(i) as File);
+    }
+    return result;
+  }),
+  v.checkItems((item) => {
+    return item.size <= IMAGE_MAX_SIZE;
+  }, "アップロードする画像は10MB以下のものにしてください"),
+  v.checkItems((item) => {
+    console.log(item.type);
+    console.log(IMAGE_TYPES.includes(item.type));
+    return IMAGE_TYPES.includes(item.type);
+  }, "JPEG, PNGいずれかの画像を選択してください"),
+);
+```
+
+valibotに用意されているmimeType, maxSizeのActionは利用できなくなるためcheckItemsで自前で頑張るしかないようでした。
+絶対何かあるでしょ、と思ってたので面食らったし時間がかかりました...
+
+zodも似たような感じらしいですね。
+諸悪の根源はFileListですね。間違いない
 
 ## ハマったところ
 
