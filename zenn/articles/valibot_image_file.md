@@ -78,12 +78,37 @@ export const ImageFileSchema = v.pipe(
   }, "JPEG, PNGいずれかの画像を選択してください"),
 );
 ```
-
 valibotに用意されているmimeType, maxSizeのActionは利用できなくなるためcheckItemsで自前で頑張るしかないようでした。
 絶対何かあるでしょ、と思ってたので面食らったし時間がかかりました...
 
 zodも似たような感じらしいですね。
 諸悪の根源はFileListですね。間違いない
+
+**追記3**
+
+```typescript
+export const OptionalImageFileSchema = v.pipe(
+  v.unknown(),
+  v.transform((v) => {
+    return v as FileList;
+  }),
+  v.transform<FileList, File | null>((input) => {
+    return input.item(0);
+  }),
+  v.check((item) => {
+    return item === null || item.size <= IMAGE_MAX_SIZE;
+  }, "アップロードする画像は100MB以下のものにしてください"),
+  v.check((item) => {
+    return item === null || IMAGE_TYPES.includes(item.type);
+  }, "JPEG, PNGいずれかの画像を選択してください"),
+);
+```
+
+FileListを直接instanceに指定するとサーバ側にそんな型ないよ、っていうエラーが出てしまうようでした。
+一度unknownを挟むことでエラーが出なくなります。（なんでや
+
+絶対に正攻法ではないのですが、もうちょっとしんどいので一旦これでお茶を濁します。
+いつの日か追記4で対応するかもしれません。
 
 ## ハマったところ
 
